@@ -3,6 +3,11 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/CollisionProfile.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputActionValue.h"
+#include "GameFramework/PlayerController.h"
+#include "Engine/LocalPlayer.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -60,5 +65,62 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	// 移動と視点操作のバインドは9-4で追加する
+	// Enhanced Input用の入力コンポーネントに変換する
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent);
+	if (!IsValid(EnhancedInputComponent))
+	{
+		return;
+	}
+
+	// IA_Moveが入力されている間、Move関数を呼ぶ
+	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Move);
+
+	// IA_Lookが入力されている間、Look関数を呼ぶ
+	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+}
+
+void APlayerCharacter::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	// 操作しているのがプレイヤーのコントローラーか確認する
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	// Enhanced Inputのサブシステムを取得する
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	if (!IsValid(Subsystem))
+	{
+		return;
+	}
+
+	// Input Mapping Contextを登録して、キーの割り当てを有効にする
+	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+}
+
+void APlayerCharacter::Move(const FInputActionValue& Value)
+{
+	// 入力された値をX(左右)とY(前後)の2つの値で受け取る
+	const FVector2D MoveVector = Value.Get<FVector2D>();
+
+	// キャラクターの正面方向に前後の入力を加える
+	AddMovementInput(GetActorForwardVector(), MoveVector.Y);
+
+	// キャラクターの右方向に左右の入力を加える
+	AddMovementInput(GetActorRightVector(), MoveVector.X);
+}
+
+void APlayerCharacter::Look(const FInputActionValue& Value)
+{
+	// マウスの動きをX(左右)とY(上下)の2つの値で受け取る
+	const FVector2D LookVector = Value.Get<FVector2D>();
+
+	// 左右の動きでコントローラーを左右に回転させる
+	AddControllerYawInput(LookVector.X);
+
+	// 上下の動きでコントローラーを上下に回転させる
+	AddControllerPitchInput(LookVector.Y);
 }

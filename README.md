@@ -1,6 +1,6 @@
 # FPSTutorial
 
-Zenn「UE5 C++入門」第9章 FPS制作チュートリアルのソースコードです。
+ZennのUnreal Engine 5の教科書 [C++入門編,第三巻] 第9章 FPS制作チュートリアルのソースコードです。
 
 ## 含まれているもの
 - Source (C++コード)
