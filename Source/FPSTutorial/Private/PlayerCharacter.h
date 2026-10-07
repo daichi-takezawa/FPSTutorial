@@ -21,7 +21,7 @@ public:
 	// コンストラクタ
 	APlayerCharacter();
 
-	// 入力のバインドを行う関数(中身は9-4で書く)
+	// 入力と関数を結び付ける関数
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 protected:
