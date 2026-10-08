@@ -11,6 +11,7 @@ class USkeletalMeshComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
+class AWeapon;
 
 UCLASS()
 class APlayerCharacter : public ACharacter
@@ -56,4 +57,22 @@ protected:
 
 	// 視点操作の入力を受け取る関数
 	void Look(const FInputActionValue& Value);
+
+	// 持たせる武器のクラス(ブループリントで設定する)
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<AWeapon> WeaponClass;
+
+	// 武器を取り付けるソケットの名前
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	FName WeaponSocketName = FName("WeaponSocket");
+
+	// 今持っている武器
+	UPROPERTY(VisibleInstanceOnly, Category = "Weapon")
+	TObjectPtr<AWeapon> CurrentWeapon;
+
+	// キャラクターがレベルから消えるときに呼ばれる関数
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	// 武器を出現させて手に持たせる関数
+	void SpawnWeapon();
 };
