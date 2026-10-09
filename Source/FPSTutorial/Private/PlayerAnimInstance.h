@@ -31,4 +31,9 @@ protected:
 	// 地面を移動している速さ(アニメーションブループリントから読む)
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	float GroundSpeed = 0.0f;
+
+
+	// 視点の上下の角度(アニメーションブループリントから読む)
+	UPROPERTY(BlueprintReadOnly, Category = "Aim")
+	float AimPitch = 0.0f;
 };

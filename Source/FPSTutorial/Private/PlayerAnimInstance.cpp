@@ -29,4 +29,7 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	// 速度から上下の動きを除いて、地面を移動している速さを計算する
 	GroundSpeed = static_cast<float>(MovementComponent->Velocity.Size2D());
+
+	// 視点の上下の角度を-180から180の範囲に直して取得する
+	AimPitch = static_cast<float>(FRotator::NormalizeAxis(OwnerCharacter->GetBaseAimRotation().Pitch));
 }
