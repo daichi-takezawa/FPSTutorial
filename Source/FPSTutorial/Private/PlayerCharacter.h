@@ -49,6 +49,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UInputAction> LookAction;
 
+	// 射撃のInput Action
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputAction> FireAction;
+
 	// 操作するコントローラーが変わったときに呼ばれる関数
 	virtual void NotifyControllerChanged() override;
 
@@ -57,6 +61,12 @@ protected:
 
 	// 視点操作の入力を受け取る関数
 	void Look(const FInputActionValue& Value);
+
+	// 射撃のボタンが押されたときに呼ばれる関数
+	void StartFire();
+
+	// 射撃のボタンが離されたときに呼ばれる関数
+	void StopFire();
 
 	// 持たせる武器のクラス(ブループリントで設定する)
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")

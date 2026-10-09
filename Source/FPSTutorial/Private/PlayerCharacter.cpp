@@ -76,6 +76,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	// IA_Lookが入力されている間、Look関数を呼ぶ
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+
+	// 射撃のボタンを押した瞬間にStartFireを呼ぶ
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APlayerCharacter::StartFire);
+
+	// 射撃のボタンを離した瞬間にStopFireを呼ぶ
+	EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &APlayerCharacter::StopFire);
 }
 
 void APlayerCharacter::NotifyControllerChanged()
@@ -165,5 +171,23 @@ void APlayerCharacter::SpawnWeapon()
 	if (IsValid(GEngine))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Weapon Equipped"));
+	}
+}
+
+void APlayerCharacter::StartFire()
+{
+	// 武器を持っていれば射撃を始める
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->StartFire();
+	}
+}
+
+void APlayerCharacter::StopFire()
+{
+	// 武器を持っていれば射撃を止める
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->StopFire();
 	}
 }
