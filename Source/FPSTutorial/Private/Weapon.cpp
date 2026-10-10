@@ -134,9 +134,9 @@ void AWeapon::Fire()
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.AddIgnoredActor(OwnerPawn);
 
-	// ライントレースで最初に当たったものを調べる
+	// 武器用のトレースチャンネル(⑨で追加したWeapon)で、最初に当たったものを調べる
 	FHitResult Hit;
-	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Visibility, QueryParams);
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_GameTraceChannel1, QueryParams);
 
 	// 弾の軌跡の終わりは、当たった位置か線の終わり
 	const FVector TracerEnd = bHit ? Hit.ImpactPoint : TraceEnd;
