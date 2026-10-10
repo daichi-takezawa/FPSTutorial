@@ -134,7 +134,7 @@ void AWeapon::Fire()
 	QueryParams.AddIgnoredActor(this);
 	QueryParams.AddIgnoredActor(OwnerPawn);
 
-	// 武器用のトレースチャンネル(⑨で追加したWeapon)で、最初に当たったものを調べる
+	// 武器用のトレースチャンネル(プロジェクト設定で追加したWeapon)で、最初に当たったものを調べる
 	FHitResult Hit;
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_GameTraceChannel1, QueryParams);
 
