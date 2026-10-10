@@ -122,6 +122,9 @@ void AWeapon::Fire()
 	FRotator ViewRotation;
 	OwnerController->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
+	// 撃つたびに視点を跳ね上げる
+	ApplyRecoil(OwnerController);
+
 	// 視点から見ている方向に線を伸ばす
 	const FVector TraceStart = ViewLocation;
 	const FVector TraceEnd = TraceStart + ViewRotation.Vector() * FireRange;
@@ -239,4 +242,24 @@ USkeletalMeshComponent* AWeapon::GetMuzzleMesh() const
 
 	// それ以外(敵など)は三人称用の銃を使う
 	return ThirdPersonMesh;
+}
+
+void AWeapon::ApplyRecoil(AController* OwnerController)
+{
+	// プレイヤーが持っているときだけ反動をつける
+	if (!OwnerController->IsPlayerController())
+	{
+		return;
+	}
+
+	// 左右の反動はランダムに決める
+	const float RecoilYaw = FMath::FRandRange(-RecoilYawMax, RecoilYawMax);
+
+	// 今の視点の向きに反動の角度を足す
+	FRotator NewRotation = OwnerController->GetControlRotation();
+	NewRotation.Pitch += RecoilPitch;
+	NewRotation.Yaw += RecoilYaw;
+
+	// 反動を足した向きを視点に反映する
+	OwnerController->SetControlRotation(NewRotation);
 }

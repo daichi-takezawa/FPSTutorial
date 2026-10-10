@@ -79,4 +79,16 @@ protected:
 
 	// 銃口のエフェクトを出すメッシュを選ぶ
 	USkeletalMeshComponent* GetMuzzleMesh() const;
+
+private:
+	// 1発ごとに視点を上に跳ね上げる角度(度)
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	float RecoilPitch = 0.3f;
+
+	// 1発ごとに視点を左右にずらす最大の角度(度)
+	UPROPERTY(EditAnywhere, Category = "Recoil")
+	float RecoilYawMax = 0.15f;
+
+	// 撃つたびに視点を動かして反動をつける
+	void ApplyRecoil(AController* OwnerController);
 };
