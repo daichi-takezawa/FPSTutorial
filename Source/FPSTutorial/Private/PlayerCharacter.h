@@ -12,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class AWeapon;
+class UHealthComponent;
 
 UCLASS()
 class APlayerCharacter : public ACharacter
@@ -79,6 +80,10 @@ protected:
 	// 今持っている武器
 	UPROPERTY(VisibleInstanceOnly, Category = "Weapon")
 	TObjectPtr<AWeapon> CurrentWeapon;
+
+	// HPを管理するコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	TObjectPtr<UHealthComponent> HealthComponent;
 
 	// キャラクターがレベルから消えるときに呼ばれる関数
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

@@ -10,6 +10,7 @@
 #include "Engine/LocalPlayer.h"
 #include "Weapon.h"
 #include "Engine/World.h"
+#include "HealthComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -47,6 +48,9 @@ APlayerCharacter::APlayerCharacter()
 
 	// コントローラーの向きにあわせてカメラを回転させる
 	FirstPersonCamera->bUsePawnControlRotation = true;
+
+	// HPを管理するコンポーネントを作成する
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 void APlayerCharacter::BeginPlay()

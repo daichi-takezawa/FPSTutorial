@@ -6,6 +6,8 @@
 
 // ヘッダーでは使う型だけを宣言しておく(前方宣言)
 class AWeapon;
+class UHealthComponent;
+class AController;
 
 UCLASS()
 class AEnemyCharacter : public ACharacter
@@ -34,6 +36,18 @@ protected:
 	// 今持っている武器
 	UPROPERTY(VisibleInstanceOnly, Category = "Weapon")
 	TObjectPtr<AWeapon> CurrentWeapon;
+
+	// HPを管理するコンポーネント
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
+	TObjectPtr<UHealthComponent> HealthComponent;
+
+	// HPが変わったときに呼ばれる関数
+	UFUNCTION()
+	void HandleHealthChanged(float NewHealth, float MaxHealth);
+
+	// HPが0になったときに呼ばれる関数
+	UFUNCTION()
+	void HandleDeath(AController* Killer);
 
 	// 武器を出現させて手に持たせる関数
 	void SpawnWeapon();

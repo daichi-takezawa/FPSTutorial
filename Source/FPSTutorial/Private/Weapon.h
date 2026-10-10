@@ -45,6 +45,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Fire")
 	float FireRange = 10000.0f;
 
+	// 1発で与えるダメージ
+	UPROPERTY(EditDefaultsOnly, Category = "Fire", meta = (ClampMin = "0.0"))
+	float Damage = 20.0f;
+
 	// 銃口のソケットの名前
 	UPROPERTY(EditDefaultsOnly, Category = "Fire")
 	FName MuzzleSocketName = FName("Muzzle");

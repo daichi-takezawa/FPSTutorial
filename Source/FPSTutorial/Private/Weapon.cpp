@@ -11,6 +11,8 @@
 #include "NiagaraComponent.h"
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "Engine/Engine.h"
+#include "GameFramework/DamageType.h"
+
 
 AWeapon::AWeapon()
 {
@@ -143,6 +145,12 @@ void AWeapon::Fire()
 
 	// 射撃音とエフェクトを出す
 	PlayFireEffects(TracerEnd, Hit, bHit);
+
+	// 何かに当たったら、当たったアクタにダメージを与える
+	if (bHit && IsValid(Hit.GetActor()))
+	{
+		UGameplayStatics::ApplyDamage(Hit.GetActor(), Damage, OwnerController, this, UDamageType::StaticClass());
+	}
 
 	// 動作確認用に当たったアクタの名前を表示する
 	if (bHit && IsValid(Hit.GetActor()) && IsValid(GEngine))
