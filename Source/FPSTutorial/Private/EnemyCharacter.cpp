@@ -4,6 +4,7 @@
 #include "Engine/World.h"
 #include "Weapon.h"
 #include "HealthComponent.h"
+#include "EnemyAIController.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -18,6 +19,21 @@ AEnemyCharacter::AEnemyCharacter()
 
 	// HPを管理するコンポーネントを作成する
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	// この敵を操作するAIControllerのクラスを設定する
+	AIControllerClass = AEnemyAIController::StaticClass();
+
+	// レベルに置いたときも、スポーンしたときもAIControllerが操作するようにする
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// コントローラーの向きに一瞬で向くのをやめる
+	bUseControllerRotationYaw = false;
+
+	// コントローラーの向きに少しずつ向くようにする
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;
+
+	// 1秒間に向きを変えられる角度
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 360.0f, 0.0f);
 }
 
 void AEnemyCharacter::BeginPlay()
