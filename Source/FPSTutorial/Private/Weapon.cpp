@@ -12,6 +12,7 @@
 #include "NiagaraDataInterfaceArrayFunctionLibrary.h"
 #include "Engine/Engine.h"
 #include "GameFramework/DamageType.h"
+#include "EnemyCharacter.h"
 
 
 AWeapon::AWeapon()
@@ -127,9 +128,18 @@ void AWeapon::Fire()
 	// 撃つたびに視点を跳ね上げる
 	ApplyRecoil(OwnerController);
 
-	// 視点から見ている方向に線を伸ばす
+	// 弾を飛ばす向きは、視点が見ている方向
+	FVector ShotDirection = ViewRotation.Vector();
+
+	// ばらつきが設定されていれば、向きを円すいの範囲でランダムにずらす
+	if (SpreadAngle > 0.0f)
+	{
+		ShotDirection = FMath::VRandCone(ShotDirection, FMath::DegreesToRadians(SpreadAngle));
+	}
+
+	// 視点から弾を飛ばす向きに線を伸ばす
 	const FVector TraceStart = ViewLocation;
-	const FVector TraceEnd = TraceStart + ViewRotation.Vector() * FireRange;
+	const FVector TraceEnd = TraceStart + ShotDirection * FireRange;
 
 	// 武器自身と持ち主には当たらないようにする
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(WeaponFire), true);
@@ -149,7 +159,15 @@ void AWeapon::Fire()
 	// 何かに当たったら、当たったアクタにダメージを与える
 	if (bHit && IsValid(Hit.GetActor()))
 	{
-		UGameplayStatics::ApplyDamage(Hit.GetActor(), Damage, OwnerController, this, UDamageType::StaticClass());
+		// 撃った人と当たった相手が、それぞれ敵かどうかを調べる
+		const bool bShooterIsEnemy = IsValid(Cast<AEnemyCharacter>(GetOwner()));
+		const bool bTargetIsEnemy = IsValid(Cast<AEnemyCharacter>(Hit.GetActor()));
+
+		// 敵同士でなければダメージを与える
+		if (!(bShooterIsEnemy && bTargetIsEnemy))
+		{
+			UGameplayStatics::ApplyDamage(Hit.GetActor(), Damage, OwnerController, this, UDamageType::StaticClass());
+		}
 	}
 
 	// 動作確認用に当たったアクタの名前を表示する

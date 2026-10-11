@@ -13,6 +13,8 @@ class UInputAction;
 struct FInputActionValue;
 class AWeapon;
 class UHealthComponent;
+class AController;
+
 
 UCLASS()
 class APlayerCharacter : public ACharacter
@@ -84,6 +86,15 @@ protected:
 	// HPを管理するコンポーネント
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Health")
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+	// HPが変わったときに呼ばれる関数
+	UFUNCTION()
+	void HandleHealthChanged(float NewHealth, float MaxHealth);
+
+	// HPが0になったときに呼ばれる関数
+	UFUNCTION()
+	void HandleDeath(AController* Killer);
+
 
 	// キャラクターがレベルから消えるときに呼ばれる関数
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

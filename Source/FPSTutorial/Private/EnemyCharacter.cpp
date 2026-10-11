@@ -112,3 +112,21 @@ void AEnemyCharacter::HandleDeath(AController* Killer)
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Enemy Dead"));
 	}
 }
+
+void AEnemyCharacter::StartFire()
+{
+	// 武器を持っていれば射撃を始める
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->StartFire();
+	}
+}
+
+void AEnemyCharacter::StopFire()
+{
+	// 武器を持っていれば射撃を止める
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->StopFire();
+	}
+}

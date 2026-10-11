@@ -62,6 +62,13 @@ void APlayerCharacter::BeginPlay()
 
 	// 武器を出現させて手に持たせる
 	SpawnWeapon();
+
+	// HPが変わったときと0になったときに、自分の関数が呼ばれるようにする
+	if (IsValid(HealthComponent))
+	{
+		HealthComponent->OnHealthChanged.AddDynamic(this, &APlayerCharacter::HandleHealthChanged);
+		HealthComponent->OnDeath.AddDynamic(this, &APlayerCharacter::HandleDeath);
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -193,5 +200,23 @@ void APlayerCharacter::StopFire()
 	if (IsValid(CurrentWeapon))
 	{
 		CurrentWeapon->StopFire();
+	}
+}
+
+void APlayerCharacter::HandleHealthChanged(float NewHealth, float MaxHealth)
+{
+	// 動作確認用に今のHPを表示する
+	if (IsValid(GEngine))
+	{
+		GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Green, FString::Printf(TEXT("Player HP: %.0f / %.0f"), NewHealth, MaxHealth));
+	}
+}
+
+void APlayerCharacter::HandleDeath(AController* Killer)
+{
+	// 動作確認用に倒れたことを表示する
+	if (IsValid(GEngine))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Player Dead"));
 	}
 }

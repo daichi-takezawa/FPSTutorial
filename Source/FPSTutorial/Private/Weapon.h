@@ -45,6 +45,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Fire")
 	float FireRange = 10000.0f;
 
+	// 弾のばらつきの角度(度)。0ならまっすぐ飛ぶ
+	UPROPERTY(EditDefaultsOnly, Category = "Fire", meta = (ClampMin = "0.0", ClampMax = "45.0"))
+	float SpreadAngle = 0.0f;
+
 	// 1発で与えるダメージ
 	UPROPERTY(EditDefaultsOnly, Category = "Fire", meta = (ClampMin = "0.0"))
 	float Damage = 20.0f;

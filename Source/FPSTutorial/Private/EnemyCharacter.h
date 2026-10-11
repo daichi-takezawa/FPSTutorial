@@ -18,6 +18,12 @@ public:
 	// コンストラクタ
 	AEnemyCharacter();
 
+	// 武器で射撃を始める(AIControllerから呼ぶ)
+	void StartFire();
+
+	// 武器の射撃を止める(AIControllerから呼ぶ)
+	void StopFire();
+
 protected:
 	// ゲーム開始時に呼ばれる関数
 	virtual void BeginPlay() override;

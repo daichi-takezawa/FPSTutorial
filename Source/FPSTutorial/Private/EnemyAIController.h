@@ -36,6 +36,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (ClampMin = "0.05"))
 	float UpdateInterval = 0.2f;
 
+	// 1回の連射を続ける時間の最小値(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (ClampMin = "0.1"))
+	float MinBurstTime = 1.5f;
+
+	// 1回の連射を続ける時間の最大値(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (ClampMin = "0.1"))
+	float MaxBurstTime = 3.0f;
+
+	// 連射のあとに休む時間の最小値(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (ClampMin = "0.1"))
+	float MinRestTime = 1.0f;
+
+	// 連射のあとに休む時間の最大値(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "AI", meta = (ClampMin = "0.1"))
+	float MaxRestTime = 2.0f;
+
 	// この敵が止まる距離(ゲーム開始時にランダムで決まる)
 	UPROPERTY(VisibleInstanceOnly, Category = "AI")
 	float StopDistance = 0.0f;
@@ -44,9 +60,35 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, Category = "AI")
 	bool bIsInRange = false;
 
+	// 今撃っているかどうか
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bIsFiring = false;
+
+	// 連射のあとに休んでいるかどうか
+	UPROPERTY(VisibleInstanceOnly, Category = "AI")
+	bool bIsResting = false;
+
 	// 行動を判断するタイマー
 	FTimerHandle UpdateTimerHandle;
 
 	// 一定間隔で呼ばれて、次の行動を判断する関数
 	void UpdateBehavior();
+
+	// 連射を終わらせるタイマー
+	FTimerHandle BurstTimerHandle;
+
+	// 休む時間を数えるタイマー
+	FTimerHandle RestTimerHandle;
+
+	// 連射を始める関数
+	void StartBurst();
+
+	// 連射を終えて、休み始める関数
+	void FinishBurst();
+
+	// 休むのを終える関数
+	void FinishRest();
+
+	// 射撃を止める関数
+	void StopShooting();
 };
