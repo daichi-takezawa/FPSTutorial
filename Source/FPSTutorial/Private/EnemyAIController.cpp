@@ -7,9 +7,6 @@
 
 void AEnemyAIController::OnPossess(APawn* InPawn)
 {
-	// 撃っている途中なら射撃を止める
-	StopShooting();
-
 	Super::OnPossess(InPawn);
 
 	// 止まる距離を最小値から最大値の間でランダムに決める(最大値が最小値より小さくならないようにする)
@@ -28,6 +25,9 @@ void AEnemyAIController::OnPossess(APawn* InPawn)
 
 void AEnemyAIController::OnUnPossess()
 {
+	// 撃っている途中なら射撃を止める
+	StopShooting();
+
 	// 行動の判断を止める
 	GetWorldTimerManager().ClearTimer(UpdateTimerHandle);
 
@@ -121,67 +121,67 @@ void AEnemyAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFoll
 	}
 }
 
-	void AEnemyAIController::StartBurst()
+void AEnemyAIController::StartBurst()
+{
+	// 操作している敵を、EnemyCharacterとして取得する
+	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
+	if (!IsValid(Enemy))
 	{
-		// 操作している敵を、EnemyCharacterとして取得する
-		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
-		if (!IsValid(Enemy))
-		{
-			return;
-		}
-
-		// 敵に射撃を始めてもらう
-		Enemy->StartFire();
-		bIsFiring = true;
-
-		// 連射を続ける時間をランダムに決める(最大値が最小値より小さくならないようにする)
-		const float BurstTime = FMath::FRandRange(MinBurstTime, FMath::Max(MinBurstTime, MaxBurstTime));
-
-		// 連射の時間が経ったらFinishBurstを呼ぶ
-		GetWorldTimerManager().SetTimer(BurstTimerHandle, this, &AEnemyAIController::FinishBurst, BurstTime, false);
-
-		// 動作確認用のメッセージを表示する
-		if (IsValid(GEngine))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Enemy Fire: %.1f s"), BurstTime));
-		}
+		return;
 	}
 
-	void AEnemyAIController::FinishBurst()
+	// 敵に射撃を始めてもらう
+	Enemy->StartFire();
+	bIsFiring = true;
+
+	// 連射を続ける時間をランダムに決める(最大値が最小値より小さくならないようにする)
+	const float BurstTime = FMath::FRandRange(MinBurstTime, FMath::Max(MinBurstTime, MaxBurstTime));
+
+	// 連射の時間が経ったらFinishBurstを呼ぶ
+	GetWorldTimerManager().SetTimer(BurstTimerHandle, this, &AEnemyAIController::FinishBurst, BurstTime, false);
+
+	// 動作確認用のメッセージを表示する
+	if (IsValid(GEngine))
 	{
-		// 射撃を止める
-		StopShooting();
-
-		// 休む時間をランダムに決める(最大値が最小値より小さくならないようにする)
-		const float RestTime = FMath::FRandRange(MinRestTime, FMath::Max(MinRestTime, MaxRestTime));
-
-		// 休み始めて、休む時間が経ったらFinishRestを呼ぶ
-		bIsResting = true;
-		GetWorldTimerManager().SetTimer(RestTimerHandle, this, &AEnemyAIController::FinishRest, RestTime, false);
-
-		// 動作確認用のメッセージを表示する
-		if (IsValid(GEngine))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Enemy Rest: %.1f s"), RestTime));
-		}
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Enemy Fire: %.1f s"), BurstTime));
 	}
+}
 
-	void AEnemyAIController::FinishRest()
+void AEnemyAIController::FinishBurst()
+{
+	// 射撃を止める
+	StopShooting();
+
+	// 休む時間をランダムに決める(最大値が最小値より小さくならないようにする)
+	const float RestTime = FMath::FRandRange(MinRestTime, FMath::Max(MinRestTime, MaxRestTime));
+
+	// 休み始めて、休む時間が経ったらFinishRestを呼ぶ
+	bIsResting = true;
+	GetWorldTimerManager().SetTimer(RestTimerHandle, this, &AEnemyAIController::FinishRest, RestTime, false);
+
+	// 動作確認用のメッセージを表示する
+	if (IsValid(GEngine))
 	{
-		// 休むのを終える(次のUpdateBehaviorで連射が始まる)
-		bIsResting = false;
+		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Enemy Rest: %.1f s"), RestTime));
 	}
+}
 
-	void AEnemyAIController::StopShooting()
+void AEnemyAIController::FinishRest()
+{
+	// 休むのを終える(次のUpdateBehaviorで連射が始まる)
+	bIsResting = false;
+}
+
+void AEnemyAIController::StopShooting()
+{
+	// 連射を終わらせるタイマーを止める
+	GetWorldTimerManager().ClearTimer(BurstTimerHandle);
+	bIsFiring = false;
+
+	// 操作している敵に射撃を止めてもらう
+	AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
+	if (IsValid(Enemy))
 	{
-		// 連射を終わらせるタイマーを止める
-		GetWorldTimerManager().ClearTimer(BurstTimerHandle);
-		bIsFiring = false;
-
-		// 操作している敵に射撃を止めてもらう
-		AEnemyCharacter* Enemy = Cast<AEnemyCharacter>(GetPawn());
-		if (IsValid(Enemy))
-		{
-			Enemy->StopFire();
-		}
+		Enemy->StopFire();
 	}
+}
