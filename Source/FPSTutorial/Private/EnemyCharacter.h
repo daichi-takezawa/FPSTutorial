@@ -59,6 +59,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "0.1"))
 	float DeathLifeSpan = 5.0f;
 
+		// この敵を倒したときにもらえるスコア
+	UPROPERTY(EditDefaultsOnly, Category = "Score", meta = (ClampMin = "0"))
+	int32 ScoreValue = 100;
+
 	// 武器を出現させて手に持たせる関数
 	void SpawnWeapon();
 };

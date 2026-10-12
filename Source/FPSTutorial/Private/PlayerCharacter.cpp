@@ -11,6 +11,7 @@
 #include "Weapon.h"
 #include "Engine/World.h"
 #include "HealthComponent.h"
+#include "PlayerHUDWidget.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -69,6 +70,9 @@ void APlayerCharacter::BeginPlay()
 		HealthComponent->OnHealthChanged.AddDynamic(this, &APlayerCharacter::HandleHealthChanged);
 		HealthComponent->OnDeath.AddDynamic(this, &APlayerCharacter::HandleDeath);
 	}
+
+	// HUDのウィジェットを作って画面に表示する
+	CreateHUD();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -218,5 +222,46 @@ void APlayerCharacter::HandleDeath(AController* Killer)
 	if (IsValid(GEngine))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Player Dead"));
+	}
+}
+
+void APlayerCharacter::CreateHUD()
+{
+	// HUDのウィジェットのクラスが設定されていなければ何もしない
+	if (!HUDWidgetClass)
+	{
+		return;
+	}
+
+	// このキャラクターを操作しているプレイヤーのコントローラーを取得する
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (!IsValid(PlayerController))
+	{
+		return;
+	}
+
+	// 設定したクラスから、HUDのウィジェットを作る
+	HUDWidget = CreateWidget<UPlayerHUDWidget>(PlayerController, HUDWidgetClass);
+	if (!IsValid(HUDWidget))
+	{
+		return;
+	}
+
+	// 作ったウィジェットを画面に表示する
+	HUDWidget->AddToViewport();
+
+	// 動作確認用のメッセージを表示する
+	if (IsValid(GEngine))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("HUD Created"));
+	}
+}
+
+void APlayerCharacter::UpdateScore(int32 NewScore)
+{
+	// HUDのウィジェットがあれば、スコアの表示を更新する
+	if (IsValid(HUDWidget))
+	{
+		HUDWidget->SetScore(NewScore);
 	}
 }

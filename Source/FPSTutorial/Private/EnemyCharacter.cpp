@@ -6,6 +6,7 @@
 #include "HealthComponent.h"
 #include "EnemyAIController.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "FPSGameMode.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -131,7 +132,22 @@ void AEnemyCharacter::HandleDeath(AController* Killer)
 
 	// 決めた時間が経ったら、敵を自動で消す
 	SetLifeSpan(DeathLifeSpan);
+
+	// 倒したのがプレイヤーでなければ、スコアは加算しない
+	if (!IsValid(Killer) || !Killer->IsPlayerController())
+	{
+		return;
+	}
+
+	// GameModeを取得して、この敵のスコアを加算する
+	AFPSGameMode* GameMode = GetWorld()->GetAuthGameMode<AFPSGameMode>();
+	if (IsValid(GameMode))
+	{
+		GameMode->AddScore(ScoreValue);
+	}
 }
+
+
 
 void AEnemyCharacter::StartFire()
 {

@@ -14,6 +14,7 @@ struct FInputActionValue;
 class AWeapon;
 class UHealthComponent;
 class AController;
+class UPlayerHUDWidget;
 
 
 UCLASS()
@@ -27,6 +28,9 @@ public:
 
 	// 入力と関数を結び付ける関数
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	// 画面のスコアの表示を更新する(GameModeから呼ぶ)
+	void UpdateScore(int32 NewScore);
 
 protected:
 	// ゲーム開始時に呼ばれる関数
@@ -101,4 +105,15 @@ protected:
 
 	// 武器を出現させて手に持たせる関数
 	void SpawnWeapon();
+
+	// 画面に表示するHUDのウィジェットのクラス(ブループリントで設定する)
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UPlayerHUDWidget> HUDWidgetClass;
+
+	// 画面に表示しているHUDのウィジェット
+	UPROPERTY()
+	TObjectPtr<UPlayerHUDWidget> HUDWidget;
+
+	// HUDのウィジェットを作って画面に表示する関数
+	void CreateHUD();
 };
