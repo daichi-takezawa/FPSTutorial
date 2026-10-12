@@ -55,6 +55,10 @@ protected:
 	UFUNCTION()
 	void HandleDeath(AController* Killer);
 
+	// 倒れてから消えるまでの時間(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "Health", meta = (ClampMin = "0.1"))
+	float DeathLifeSpan = 5.0f;
+
 	// 武器を出現させて手に持たせる関数
 	void SpawnWeapon();
 };

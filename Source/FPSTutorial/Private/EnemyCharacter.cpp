@@ -5,6 +5,7 @@
 #include "Weapon.h"
 #include "HealthComponent.h"
 #include "EnemyAIController.h"
+#include "Components/SkeletalMeshComponent.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -111,6 +112,25 @@ void AEnemyCharacter::HandleDeath(AController* Killer)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Enemy Dead"));
 	}
+
+	// AIControllerを外して、行動の判断と射撃を止める
+	DetachFromControllerPendingDestroy();
+
+	// 今の勢いを止めて、これ以上移動しないようにする
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();
+
+	// カプセルの当たり判定をなくして、弾やプレイヤーが通り抜けられるようにする
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// メッシュの当たり判定をラグドール用の設定にする
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	// 物理シミュレーションをオンにして、ラグドールで倒れさせる
+	GetMesh()->SetSimulatePhysics(true);
+
+	// 決めた時間が経ったら、敵を自動で消す
+	SetLifeSpan(DeathLifeSpan);
 }
 
 void AEnemyCharacter::StartFire()
