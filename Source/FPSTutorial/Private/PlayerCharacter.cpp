@@ -209,10 +209,10 @@ void APlayerCharacter::StopFire()
 
 void APlayerCharacter::HandleHealthChanged(float NewHealth, float MaxHealth)
 {
-	// 動作確認用に今のHPを表示する
-	if (IsValid(GEngine))
+	// HUDのウィジェットがあれば、HPバーの表示を更新する
+	if (IsValid(HUDWidget))
 	{
-		GEngine->AddOnScreenDebugMessage(3, 2.0f, FColor::Green, FString::Printf(TEXT("Player HP: %.0f / %.0f"), NewHealth, MaxHealth));
+		HUDWidget->SetHealth(NewHealth, MaxHealth);
 	}
 }
 
@@ -249,6 +249,12 @@ void APlayerCharacter::CreateHUD()
 
 	// 作ったウィジェットを画面に表示する
 	HUDWidget->AddToViewport();
+
+	// ゲーム開始時のHPをHPバーに反映する
+	if (IsValid(HealthComponent))
+	{
+		HUDWidget->SetHealth(HealthComponent->GetHealth(), HealthComponent->GetMaxHealth());
+	}
 
 	// 動作確認用のメッセージを表示する
 	if (IsValid(GEngine))
