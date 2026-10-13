@@ -1,8 +1,8 @@
 ﻿#include "PlayerHUDWidget.h"
 #include "Components/TextBlock.h"
-
-// ここから追加
 #include "Components/ProgressBar.h"
+#include "Components/Overlay.h"
+#include "Animation/WidgetAnimation.h"
 
 void UPlayerHUDWidget::SetScore(int32 NewScore)
 {
@@ -36,4 +36,22 @@ void UPlayerHUDWidget::SetHealth(float CurrentHealth, float MaxHealth)
 
 	// 計算した割合をHPバーに設定する
 	Health_ProgressBar->SetPercent(HealthPercent);
+}
+
+void UPlayerHUDWidget::ShowGameOver()
+{
+	// GAME OVERのUIがなければ何もしない
+	if (!IsValid(GameOverBox_Overlay))
+	{
+		return;
+	}
+
+	// アニメーションがあれば、最初から再生する
+	if (IsValid(GameOverAnim))
+	{
+		PlayAnimation(GameOverAnim);
+	}
+
+	// GAME OVERのUIを表示する(マウスのクリックなどは受け付けない)
+	GameOverBox_Overlay->SetVisibility(ESlateVisibility::HitTestInvisible);
 }

@@ -218,10 +218,10 @@ void APlayerCharacter::HandleHealthChanged(float NewHealth, float MaxHealth)
 
 void APlayerCharacter::HandleDeath(AController* Killer)
 {
-	// 動作確認用に倒れたことを表示する
-	if (IsValid(GEngine))
+	// HUDのウィジェットがあれば、GAME OVERを表示する
+	if (IsValid(HUDWidget))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Player Dead"));
+		HUDWidget->ShowGameOver();
 	}
 }
 
