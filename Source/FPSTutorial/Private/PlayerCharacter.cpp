@@ -12,6 +12,10 @@
 #include "Engine/World.h"
 #include "HealthComponent.h"
 #include "PlayerHUDWidget.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
+#include "Sound/SoundBase.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -52,6 +56,16 @@ APlayerCharacter::APlayerCharacter()
 
 	// HPを管理するコンポーネントを作成する
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+
+	// 死亡用カメラを作成して、カプセルに取り付ける
+	DeathCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("DeathCamera"));
+	DeathCamera->SetupAttachment(GetCapsuleComponent());
+
+	// 体の真上(4m上)に置いて、真下を向かせる
+	DeathCamera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 400.0f), FRotator(-90.0f, 0.0f, 0.0f));
+
+	// 倒れるまでは使わないので、最初はオフにしておく
+	DeathCamera->SetAutoActivate(false);
 }
 
 void APlayerCharacter::BeginPlay()
@@ -73,6 +87,12 @@ void APlayerCharacter::BeginPlay()
 
 	// HUDのウィジェットを作って画面に表示する
 	CreateHUD();
+
+	// スポーン音が設定されていれば、2Dの音で再生する
+	if (IsValid(SpawnSound))
+	{
+		UGameplayStatics::PlaySound2D(this, SpawnSound);
+	}
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -218,11 +238,28 @@ void APlayerCharacter::HandleHealthChanged(float NewHealth, float MaxHealth)
 
 void APlayerCharacter::HandleDeath(AController* Killer)
 {
-	// HUDのウィジェットがあれば、GAME OVERを表示する
-	if (IsValid(HUDWidget))
+	// 撃っている途中なら射撃を止める
+	StopFire();
+
+	// プレイヤーの操作を受け付けないようにする
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (IsValid(PlayerController))
 	{
-		HUDWidget->ShowGameOver();
+		DisableInput(PlayerController);
 	}
+
+	// 今の勢いを止めて、これ以上移動しないようにする
+	GetCharacterMovement()->StopMovementImmediately();
+	GetCharacterMovement()->DisableMovement();
+
+	// カプセルの当たり判定をなくして、ラグドールとぶつからないようにする
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// 三人称用の体と銃を見せて、ラグドールで倒れさせる
+	StartRagdoll();
+
+	// 真上からのカメラに切り替えて、GAME OVERを表示する
+	StartDeathCamera();
 }
 
 void APlayerCharacter::CreateHUD()
@@ -270,4 +307,92 @@ void APlayerCharacter::UpdateScore(int32 NewScore)
 	{
 		HUDWidget->SetScore(NewScore);
 	}
+}
+
+bool APlayerCharacter::IsDead() const
+{
+	// HealthComponentがなければ倒れていないことにする
+	if (!IsValid(HealthComponent))
+	{
+		return false;
+	}
+
+	// HealthComponentに倒れているかを聞いて返す
+	return HealthComponent->IsDead();
+}
+
+void APlayerCharacter::StartRagdoll()
+{
+	// 一人称用の体を隠す
+	FirstPersonMesh->SetHiddenInGame(true);
+
+	// 三人称用の体を、自分からも見えるようにする
+	GetMesh()->SetOwnerNoSee(false);
+
+	// 影を落とすためだけの描画設定を外して、普通のメッシュとして描画する
+	GetMesh()->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::None;
+
+	// 描画の設定を変えたことを知らせて、描画し直してもらう
+	GetMesh()->MarkRenderStateDirty();
+
+	// 武器も、三人称用の銃だけを見せる
+	if (IsValid(CurrentWeapon))
+	{
+		CurrentWeapon->ShowThirdPersonOnly();
+	}
+
+	// メッシュの当たり判定をラグドール用の設定にする
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+
+	// 物理シミュレーションをオンにして、ラグドールで倒れさせる
+	GetMesh()->SetSimulatePhysics(true);
+}
+
+void APlayerCharacter::StartDeathCamera()
+{
+	// 死亡用カメラがなければ何もしない
+	if (!IsValid(DeathCamera))
+	{
+		return;
+	}
+
+	// 一人称のカメラをオフにして、死亡用カメラをオンにする
+	FirstPersonCamera->SetActive(false);
+	DeathCamera->SetActive(true);
+
+	// 一定間隔でRiseDeathCameraを呼んで、カメラを少しずつ上げ続ける
+	GetWorldTimerManager().SetTimer(CameraRiseTimerHandle, this, &APlayerCharacter::RiseDeathCamera, DeathCameraRiseInterval, true);
+
+	// HUDのウィジェットがあれば、GAME OVERを表示する
+	if (IsValid(HUDWidget))
+	{
+		HUDWidget->ShowGameOver();
+	}
+
+	// 決めた時間が経ったら、ゲームをやり直す
+	GetWorldTimerManager().SetTimer(RestartTimerHandle, this, &APlayerCharacter::RestartGame, RestartDelay, false);
+}
+
+void APlayerCharacter::RiseDeathCamera()
+{
+	// 死亡用カメラがなければ何もしない
+	if (!IsValid(DeathCamera))
+	{
+		return;
+	}
+
+	// 1回分の上がる量(速さ×間隔)を計算する
+	const float RiseAmount = DeathCameraRiseSpeed * DeathCameraRiseInterval;
+
+	// 死亡用カメラを、今の位置から上に動かす
+	DeathCamera->AddWorldOffset(FVector(0.0f, 0.0f, RiseAmount));
+}
+
+void APlayerCharacter::RestartGame()
+{
+	// 今開いているレベルの名前を取得する
+	const FString LevelName = UGameplayStatics::GetCurrentLevelName(this);
+
+	// 同じレベルを開き直して、ゲームを最初からやり直す
+	UGameplayStatics::OpenLevel(this, FName(*LevelName));
 }

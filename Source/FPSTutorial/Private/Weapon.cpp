@@ -99,6 +99,21 @@ void AWeapon::StopFire()
 	GetWorldTimerManager().ClearTimer(FireTimerHandle);
 }
 
+void AWeapon::ShowThirdPersonOnly()
+{
+	// 一人称用の銃を隠す
+	FirstPersonMesh->SetHiddenInGame(true);
+
+	// 三人称用の銃を、持ち主からも見えるようにする
+	ThirdPersonMesh->SetOwnerNoSee(false);
+
+	// 影を落とすためだけの描画設定を外して、普通のメッシュとして描画する
+	ThirdPersonMesh->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::None;
+
+	// 描画の設定を変えたことを知らせて、描画し直してもらう
+	ThirdPersonMesh->MarkRenderStateDirty();
+}
+
 void AWeapon::Fire()
 {
 	// 撃った時間を記録する

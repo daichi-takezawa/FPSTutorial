@@ -15,6 +15,7 @@ class AWeapon;
 class UHealthComponent;
 class AController;
 class UPlayerHUDWidget;
+class USoundBase;
 
 
 UCLASS()
@@ -31,6 +32,9 @@ public:
 
 	// 画面のスコアの表示を更新する(GameModeから呼ぶ)
 	void UpdateScore(int32 NewScore);
+
+	// 倒れているかどうかを返す(敵のAIControllerから呼ぶ)
+	bool IsDead() const;
 
 protected:
 	// ゲーム開始時に呼ばれる関数
@@ -116,4 +120,41 @@ protected:
 
 	// HUDのウィジェットを作って画面に表示する関数
 	void CreateHUD();
+
+	// 倒れたときに切り替える、真上からのカメラ
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<UCameraComponent> DeathCamera;
+
+	// 死亡用カメラが上がる速さ(cm/秒)
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float DeathCameraRiseSpeed = 50.0f;
+
+	// 倒れてから、ゲームをやり直すまでの時間(秒)
+	UPROPERTY(EditDefaultsOnly, Category = "Death")
+	float RestartDelay = 5.0f;
+
+	// 死亡用カメラを動かす間隔(秒)
+	float DeathCameraRiseInterval = 0.02f;
+
+	// 死亡用カメラを少しずつ上げるタイマー
+	FTimerHandle CameraRiseTimerHandle;
+
+	// ゲームをやり直すタイマー
+	FTimerHandle RestartTimerHandle;
+
+	// 三人称用の体と銃を見せて、ラグドールで倒れさせる関数
+	void StartRagdoll();
+
+	// 真上からのカメラに切り替えて、GAME OVERを表示する関数
+	void StartDeathCamera();
+
+	// 死亡用カメラを少しだけ上に動かす関数(タイマーで繰り返し呼ぶ)
+	void RiseDeathCamera();
+
+	// 同じレベルを開き直して、ゲームをやり直す関数
+	void RestartGame();
+
+	// プレイヤーが出現したときに鳴らすスポーン音
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	TObjectPtr<USoundBase> SpawnSound;
 };

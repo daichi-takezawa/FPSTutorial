@@ -4,6 +4,7 @@
 #include "Navigation/PathFollowingComponent.h"
 #include "TimerManager.h"
 #include "EnemyCharacter.h"
+#include "PlayerCharacter.h"
 
 void AEnemyAIController::OnPossess(APawn* InPawn)
 {
@@ -39,6 +40,13 @@ void AEnemyAIController::UpdateBehavior()
 	// 操作している敵と、プレイヤーのキャラクターを取得する
 	APawn* ControlledPawn = GetPawn();
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+
+	// プレイヤーが倒れていたら、プレイヤーがいないときと同じ扱いにする
+	const APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(PlayerPawn);
+	if (IsValid(PlayerCharacter) && PlayerCharacter->IsDead())
+	{
+		PlayerPawn = nullptr;
+	}
 
 	// 敵かプレイヤーがいなければ、その場で止まって待つ
 	if (!IsValid(ControlledPawn) || !IsValid(PlayerPawn))

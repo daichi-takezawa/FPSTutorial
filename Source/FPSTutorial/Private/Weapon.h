@@ -28,6 +28,9 @@ public:
 	// 射撃を止める(ボタンを離したときに呼ぶ)
 	void StopFire();
 
+	// 一人称用の銃を隠して、三人称用の銃を持ち主にも見せる(プレイヤーが倒れたときに呼ぶ)
+	void ShowThirdPersonOnly();
+
 protected:
 	// 持ち主にだけ見える一人称用の銃のメッシュ
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mesh")
